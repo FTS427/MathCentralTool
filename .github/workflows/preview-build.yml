@@ -1,10 +1,35 @@
 name: Preview-Build
 
+on:
+  workflow_dispatch:
+    inputs:
+      VER:
+        description: 'MathTool version'
+        required: false
+      CHANGE:
+        description: 'Update info'
+        required: true
+
 jobs:
-  linux:
+  build:
+    permissions:
+      contents: write
+    if: github.event.repository.owner.id == github.event.sender.id
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build
+      run: |
+        mkdir build
+        cd build
+        cmake ../
     - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/
+        name: MathTool Preview Update
+        tag_name: ${{ github.event.inputs.VER }}
+        body: ${{ github.event.inputs.CHANGE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
